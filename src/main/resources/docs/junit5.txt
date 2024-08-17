@@ -34,3 +34,9 @@ https://maven.apache.org/wrapper/index.html
 Чтобы была возможность одновременного использования существует junit-platform-engine API (соответствующая библиотека)
 Тесты запускаются посредством maven, gradle, idea. Для этого они используют библиотеку junit-platform-launcher.
 Используя ее можно написать свой лаунчер
+
+4. Tags
+Запуск тестов помеченных определенным тегом
+    mvn clean test -Dgroups=full
+    mvn clean test -Dgroups=user
+    mvn clean test -DexcludedGroups=user

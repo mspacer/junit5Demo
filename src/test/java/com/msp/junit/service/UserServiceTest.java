@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Tag("full")
 class UserServiceTest {
     private static final User IVAN = User.of(1, "Ivan", "");
     private static final User PETR = User.of(2, "Petr", "");
@@ -35,12 +36,14 @@ class UserServiceTest {
     }
 
     @Test
+    @Tag("user")
     void usersEmptyIfNoAdded() {
         var all = userService.getAll();
         assertTrue(all.isEmpty(), "users should be empty");
     }
 
     @Test
+    @Tag("user")
     void userAdd() {
         userService.add(IVAN);
         userService.add(PETR);
@@ -52,6 +55,7 @@ class UserServiceTest {
     }
 
     @Test
+    @Tag("login")
     void loginSuccessIfUserPresent(){
         userService.add(IVAN);
 
@@ -62,6 +66,7 @@ class UserServiceTest {
     }
 
     @Test
+    @Tag("user")
     void usersConvertedToMapById() {
         userService.add(IVAN, PETR);
         Map<Integer, User> userMap = userService.getAllConvertedById();
@@ -74,6 +79,7 @@ class UserServiceTest {
     }
 
     @Test
+    @Tag("login")
     void throwExceptionIfLoginOrPasswordIsNull() {
         assertAll(
                 () -> assertThrows(IllegalArgumentException.class, () -> userService.login(null, "")),
