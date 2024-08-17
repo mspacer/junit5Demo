@@ -28,3 +28,9 @@ https://maven.apache.org/wrapper/index.html
 Поэтому метод, помеченный @BeforeAll/@AfterAll должен быть статическим
 Для изменения такого поведения класс должен быть помечен аннотацией
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+
+3. Test Launcher
+Тест могут писаться как на jUnit5 так и на jUnit4. Но какждый jUnit имете свой engine для запуска тестов.
+Чтобы была возможность одновременного использования существует junit-platform-engine API (соответствующая библиотека)
+Тесты запускаются посредством maven, gradle, idea. Для этого они используют библиотеку junit-platform-launcher.
+Используя ее можно написать свой лаунчер
