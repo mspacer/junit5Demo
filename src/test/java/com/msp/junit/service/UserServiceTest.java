@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Tag("full")
+@TestMethodOrder(MethodOrderer.Random.class)
 class UserServiceTest {
     private static final User IVAN = User.of(1, "Ivan", "");
     private static final User PETR = User.of(2, "Petr", "");
@@ -44,6 +45,8 @@ class UserServiceTest {
 
     @Test
     @Tag("user")
+    @Order(1)
+    @DisplayName("тест добавления пользователя")
     void userAdd() {
         userService.add(IVAN);
         userService.add(PETR);
@@ -55,18 +58,9 @@ class UserServiceTest {
     }
 
     @Test
-    @Tag("login")
-    void loginSuccessIfUserPresent(){
-        userService.add(IVAN);
-
-        Optional<User> user = userService.login(IVAN.getUsername(), IVAN.getPassword());
-
-        assertThat(user).isPresent();
-        user.ifPresent(user1 -> assertThat(user1).isEqualTo(IVAN));
-    }
-
-    @Test
     @Tag("user")
+    @Order(2)
+    @DisplayName("Конвертация в Map")
     void usersConvertedToMapById() {
         userService.add(IVAN, PETR);
         Map<Integer, User> userMap = userService.getAllConvertedById();
@@ -78,26 +72,6 @@ class UserServiceTest {
         );
     }
 
-    @Test
-    @Tag("login")
-    void throwExceptionIfLoginOrPasswordIsNull() {
-        assertAll(
-                () -> assertThrows(IllegalArgumentException.class, () -> userService.login(null, "")),
-                () -> {
-                    IllegalArgumentException aThrows = assertThrows(IllegalArgumentException.class, () -> userService.login("null", null));
-                    assertThat(aThrows.getMessage()).isEqualTo("username or password is null");
-                }
-        );
-/*
-        try {
-            userService.login(null, "");
-            fail();
-        } catch (IllegalArgumentException iex) {
-            assertTrue(true);
-        }
-*/
-    }
-
     @AfterEach
     void afterEach() {
         //System.out.println("afterEach " + this);
@@ -106,5 +80,51 @@ class UserServiceTest {
     @AfterAll
     /*static*/ void afterAll() {
         //System.out.println("afterAll countTestExecuted= " + countTestExecuted);
+    }
+
+    @Nested
+    @Tag("login")
+    @DisplayName("тест логина")
+    @TestMethodOrder(MethodOrderer.DisplayName.class)
+    class LoginTest {
+
+        @Test
+        @Tag("login")
+        @DisplayName("поиск пользователя")
+        void loginSuccessIfUserPresent(){
+            userService.add(IVAN);
+
+            Optional<User> user = userService.login(IVAN.getUsername(), IVAN.getPassword());
+
+            assertThat(user).isPresent();
+            user.ifPresent(user1 -> assertThat(user1).isEqualTo(IVAN));
+        }
+
+        @Test
+        @DisplayName("поиск по некорректному логину")
+        void loginFailIfPasswordIncorrect() {
+            User maybeUser =  userService.login(PETR.getUsername(), "dfsfsdf").orElse(null);
+            assertThat(maybeUser).isNull();
+        }
+
+        @Test
+        @DisplayName("тест исключения")
+        void throwExceptionIfLoginOrPasswordIsNull() {
+            assertAll(
+                    () -> assertThrows(IllegalArgumentException.class, () -> userService.login(null, "")),
+                    () -> {
+                        IllegalArgumentException aThrows = assertThrows(IllegalArgumentException.class, () -> userService.login("null", null));
+                        assertThat(aThrows.getMessage()).isEqualTo("username or password is null");
+                    }
+            );
+/*
+        try {
+            userService.login(null, "");
+            fail();
+        } catch (IllegalArgumentException iex) {
+            assertTrue(true);
+        }
+*/
+        }
     }
 }

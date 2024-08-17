@@ -40,3 +40,14 @@ https://maven.apache.org/wrapper/index.html
     mvn clean test -Dgroups=full
     mvn clean test -Dgroups=user
     mvn clean test -DexcludedGroups=user
+
+5. Order
+По умолчанию порядок вызова тестовых методов случаен и хорошей практикой является написание независимых тестов.
+Однако есть возможность задать порядок.
+Для этого тестовый класс помечается аннотацией @TestMethodOrder с параметром типа MethodOrderer.class
+- OrderAnnotation. Тестовый методы помечаются аннотацией Order
+- MethodName. Сортировка по названию метода
+- DisplayName. Одноименная аннотация с названием теста
+- Random
+
+@Nested - позволяет группировать тесты с использованием внутренних классов
