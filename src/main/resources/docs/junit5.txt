@@ -20,3 +20,11 @@ https://maven.apache.org/wrapper/index.html
         mvn wrapper:wrapper
 В терминале Idea mvnw использует Java из JAVA_HOME. Соответственно классы должны быть скомпилированы этой версией
 (в настройках проекта может быть другая версия)
+
+2. LifeCycle
+@BeforeAll/@AfterAll - один раз перед вызовом тестового класса. По умолчанию
+        TestInstance.Lifecycle.PER_METHOD
+Это означает, что перед вызовом каждого тестового метода будет создаваться новый объект тестового класса.
+Поэтому метод, помеченный @BeforeAll/@AfterAll должен быть статическим
+Для изменения такого поведения класс должен быть помечен аннотацией
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
