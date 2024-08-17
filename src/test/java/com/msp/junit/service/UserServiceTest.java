@@ -73,6 +73,25 @@ class UserServiceTest {
         );
     }
 
+    @Test
+    void throwExceptionIfLoginOrPasswordIsNull() {
+        assertAll(
+                () -> assertThrows(IllegalArgumentException.class, () -> userService.login(null, "")),
+                () -> {
+                    IllegalArgumentException aThrows = assertThrows(IllegalArgumentException.class, () -> userService.login("null", null));
+                    assertThat(aThrows.getMessage()).isEqualTo("username or password is null");
+                }
+        );
+/*
+        try {
+            userService.login(null, "");
+            fail();
+        } catch (IllegalArgumentException iex) {
+            assertTrue(true);
+        }
+*/
+    }
+
     @AfterEach
     void afterEach() {
         //System.out.println("afterEach " + this);
