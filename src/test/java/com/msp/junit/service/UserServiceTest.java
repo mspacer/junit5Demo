@@ -1,9 +1,11 @@
 package com.msp.junit.service;
 
 import com.msp.junit.dto.User;
+import com.msp.junit.paramresolver.UserServiceParamResolver;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.Map;
 import java.util.Optional;
@@ -14,24 +16,30 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Tag("full")
 @TestMethodOrder(MethodOrderer.Random.class)
+@ExtendWith({
+        UserServiceParamResolver.class
+})
 class UserServiceTest {
     private static final User IVAN = User.of(1, "Ivan", "");
     private static final User PETR = User.of(2, "Petr", "");
     private static final User SERG = User.of(3, "Serg", "");
 
-    /*static*/ int countTestExecuted;
-
+    private int countTestExecuted;
     private UserService userService;
 
+    UserServiceTest(TestInfo info) {
+        System.out.println(info);
+    }
+
     @BeforeAll
-    /*static*/ void beforeAll() {
+    void beforeAll() {
         //System.out.println("beforeAll");
     }
 
     @BeforeEach
-    void beforeEach() {
+    void beforeEach(UserService userService) {
        // System.out.println("beforeEach + " + this);
-        userService = new UserService();
+        this.userService = userService;
        // System.out.println("userService + " + userService);
         countTestExecuted++;
     }
@@ -61,7 +69,7 @@ class UserServiceTest {
     @Tag("user")
     @Order(2)
     @DisplayName("Конвертация в Map")
-    void usersConvertedToMapById() {
+    void usersConvertedToMapById(UserService userService) {
         userService.add(IVAN, PETR);
         Map<Integer, User> userMap = userService.getAllConvertedById();
 

@@ -51,3 +51,14 @@ https://maven.apache.org/wrapper/index.html
 - Random
 
 @Nested - позволяет группировать тесты с использованием внутренних классов
+
+6. Dependency injection
+Механизм появился в jUnit5 как и параметризованные конструкторы тестовых классов.
+Параметры могут принимать и методы.
+За внедрение отвечает ParameterResolver
+- supportsParameter метод должен возвращать true если требуемый параметр соответствует текущему ParameterResolver
+- resolveParameter возвращает параметр
+ parameterContext - информация от требуемом методе, extensionContext - информация о вызываемом классе/методе
+Классы, реализующие ParameterResolver - singleton-ы
+
+@ExtendWith - реализует механизм, позволяющий добавлять дополнительный функционал к тестам
