@@ -62,3 +62,8 @@ https://maven.apache.org/wrapper/index.html
 Классы, реализующие ParameterResolver - singleton-ы
 
 @ExtendWith - реализует механизм, позволяющий добавлять дополнительный функционал к тестам
+
+7. Parameterized tests
+Модуль junit-jupiter-params
+Аннотация @ParameterizedTest работает в паре с  @ArgumentsSource, которая предоставляет провайдера данных
+@NullSource, @EmptySource, @ValueSource предоставляют только один параметр
