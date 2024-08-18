@@ -67,3 +67,20 @@ https://maven.apache.org/wrapper/index.html
 Модуль junit-jupiter-params
 Аннотация @ParameterizedTest работает в паре с  @ArgumentsSource, которая предоставляет провайдера данных
 @NullSource, @EmptySource, @ValueSource предоставляют только один параметр
+
+8. Extension model
+Test life cycle callbacks - позволяет внедрится на любом этапе жизненного цикла тестов
+Test instance postprocessing - вызывается после создания объекта тестового класса
+Condition test execution - создание условий на выполнения тестов. Вызывается первым пред созданием теста
+Parameter resolution - внедрение параметров
+Exception handing - Обработка исключительных ситуаций во время выполнения тестов
+
+Обработчик должен реализовать интерфейс Extension
+На каждый вариант модели есть набор интерфейсов
+BeforeAllCallback/AfterAllCallback, BeforeEachCallback/BeforeEachCallback и т.д.
+TestInstancePostProcessor
+ExecutionCondition
+ParameterResolver
+TestExecutionExceptionHandler
+
+ExtensionContext содержит в себе всю информацию о выполняемом тесте

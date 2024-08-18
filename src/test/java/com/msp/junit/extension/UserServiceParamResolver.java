@@ -1,4 +1,4 @@
-package com.msp.junit.paramresolver;
+package com.msp.junit.extension;
 
 import com.msp.junit.service.UserService;
 import org.junit.jupiter.api.extension.ExtensionContext;

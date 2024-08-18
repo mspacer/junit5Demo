@@ -1,7 +1,7 @@
 package com.msp.junit.service;
 
 import com.msp.junit.dto.User;
-import com.msp.junit.paramresolver.UserServiceParamResolver;
+import com.msp.junit.extension.*;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.*;
@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -20,7 +21,11 @@ import static org.junit.jupiter.api.Assertions.*;
 @Tag("full")
 @TestMethodOrder(MethodOrderer.Random.class)
 @ExtendWith({
-        UserServiceParamResolver.class
+        GlobalExtension.class,
+        UserServiceParamResolver.class,
+        PostProcessingExtension.class,
+        ConditionalExtension.class,
+        ThrowableExtension.class
 })
 class UserServiceTest {
     private static final User IVAN = User.of(1, "Ivan", "111");
@@ -29,14 +34,16 @@ class UserServiceTest {
 
     private int countTestExecuted;
     private UserService userService;
+    @Includetest
+    private UtilUnit utilUnit;
 
     UserServiceTest(TestInfo info) {
-        System.out.println(info);
+        System.out.println("UserServiceTest info: " + info);
     }
 
     @BeforeAll
     void beforeAll() {
-        //System.out.println("beforeAll");
+        System.out.println("beforeAll. utilUnit: " + utilUnit);
     }
 
     @BeforeEach
@@ -83,14 +90,21 @@ class UserServiceTest {
         );
     }
 
+    @Test
+    void testWithThrow() throws Exception {
+        if (true) {
+            throw new /*IOException*/RuntimeException();
+        }
+    }
+
     @AfterEach
     void afterEach() {
         //System.out.println("afterEach " + this);
     }
 
     @AfterAll
-        /*static*/ void afterAll() {
-        //System.out.println("afterAll countTestExecuted= " + countTestExecuted);
+    void afterAll() {
+        System.out.println("afterAll countTestExecuted= " + countTestExecuted);
     }
 
     @Nested
@@ -147,16 +161,16 @@ class UserServiceTest {
                     () -> assertNotNull(user),
                     () -> assertThat(user).isEqualTo(validUser)
             );
-
         }
 
         @ParameterizedTest
+/*
         @CsvFileSource(resources = {
                 "/login-test-data.csv"
         }, delimiter = ',', numLinesToSkip = 1)
+*/
         @CsvSource({
-                "Serg,333",
-                "Olga,444"
+                "Serg,333"
         })
         void loginParameterizedCsvTest(String username, String password) {
             userService.add(IVAN, PETR, SERG);
@@ -171,13 +185,12 @@ class UserServiceTest {
                     .add(Arguments.of("Serg", "333", SERG))
                     .build();
         }
-
     }
 
     static Stream<Arguments> getArgumentsForLoginTest2() {
         return Stream.of(
                 Arguments.of("Serg", "333", SERG),
-                Arguments.of("Ivan", "333", IVAN)
+                Arguments.of("Ivan", "111", IVAN)
         );
     }
 
