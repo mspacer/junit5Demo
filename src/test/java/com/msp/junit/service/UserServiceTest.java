@@ -129,6 +129,34 @@ class UserServiceTest {
     }
 
     @Test
+    void deleteUserByIdWithSpy() {
+        //spy от UserService не создается без конструктора по умолчанию
+        //UserService userServiceLocal = Mockito.spy(UserService.class);
+        UserDao userDaoMock = Mockito.mock(UserDaoImpl.class);
+        //вызов переопределенного Mockito метода у мок-объекта
+        System.out.println("userDaoMock real: " + userDaoMock.delete(1));
+
+        //spy объект на основе интерфейса ведет себя как mock
+        UserDao userDaoSpy = Mockito.spy(UserDao.class);
+        System.out.println("userDaoSpy real: " + userDaoSpy.delete(1));
+
+        //spy объект на основе класса является его наследником
+        UserDao userDao = Mockito.spy(/*UserDaoImpl.class*/new UserDaoImpl());
+        //вызов реального метода UserDao.delete у spy-объекта. Вызывает java.sql.SQLException
+        //userDao.delete(1);
+
+        UserService userServiceLocal = new UserService(userDao);
+        userServiceLocal.add(IVAN, PETR, SERG);
+
+        //Mockito.doReturn(true).when(userDao).delete(IVAN.getId());
+        //в случае Mockito.when сперва вызывается userDao.delete(IVAN.getId()),
+        //а затем переопределяется возвращаемый результат.
+        //в случае spy будет SQLException
+        Mockito.when(userDao.delete(IVAN.getId())).thenReturn(true);
+        assertThat(userServiceLocal.deleteUserById(IVAN.getId())).isTrue();
+    }
+
+    @Test
     void whenExceptionThenReturnsError() throws SQLException {
         UserDao userDao = Mockito.mock(UserDaoImpl.class);
         UserService userServiceLocal = new UserService(userDao);

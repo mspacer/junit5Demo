@@ -15,6 +15,9 @@ public class UserService {
     private final List<User> users = new ArrayList<>();
     private final UserDao userDao;
 
+    /*public UserService() {
+        this.userDao = null;
+    }*/
     public UserService(UserDao userDao) {
         this.userDao = userDao;
     }
