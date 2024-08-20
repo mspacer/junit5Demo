@@ -1,10 +1,13 @@
 package com.msp.junit.extension;
 
+import com.msp.junit.dao.UserDao;
+import com.msp.junit.dao.UserDaoImpl;
 import com.msp.junit.service.UserService;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
+import org.mockito.Mockito;
 
 public class UserServiceParamResolver implements ParameterResolver {
     @Override
@@ -20,7 +23,8 @@ public class UserServiceParamResolver implements ParameterResolver {
         // поэтому UserService в каждом методе все равно будет разный, а
         // beforeEach + тестовый метод - одинаковый
         var store =  extensionContext.getStore(ExtensionContext.Namespace.GLOBAL);
-        return store.getOrComputeIfAbsent(UserService.class, userServiceClass -> new UserService());
+
+        return store.getOrComputeIfAbsent(UserService.class, userServiceClass -> new UserService(new UserDaoImpl()));
         //return new UserService();
     }
 }

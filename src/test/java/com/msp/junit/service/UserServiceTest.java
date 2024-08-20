@@ -1,5 +1,7 @@
 package com.msp.junit.service;
 
+import com.msp.junit.dao.UserDao;
+import com.msp.junit.dao.UserDaoImpl;
 import com.msp.junit.dto.User;
 import com.msp.junit.extension.*;
 import org.hamcrest.MatcherAssert;
@@ -8,8 +10,14 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.mockito.internal.progress.MockingProgress;
+import org.mockito.internal.progress.ThreadSafeMockingProgress;
 
 import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -25,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
         UserServiceParamResolver.class,
         PostProcessingExtension.class,
         ConditionalExtension.class,
-        ThrowableExtension.class
+        //ThrowableExtension.class
 })
 class UserServiceTest {
     private static final User IVAN = User.of(1, "Ivan", "111");
@@ -34,6 +42,7 @@ class UserServiceTest {
 
     private int countTestExecuted;
     private UserService userService;
+
     @Includetest
     private UtilUnit utilUnit;
 
@@ -52,6 +61,90 @@ class UserServiceTest {
         this.userService = userService;
         // System.out.println("userService + " + userService);
         countTestExecuted++;
+    }
+
+    @Test
+    void deleteUserById() {
+        //Интерфейс вместо класса
+        UserDao userDao = Mockito.mock(UserDao.class);
+        System.out.println("userDao is mock: " + Mockito.mockingDetails(userDao).isMock());
+
+        //UserDao userDao = Mockito.spy(UserDao.class);
+        UserService userServiceLocal= new UserService(userDao);
+
+        userServiceLocal.add(IVAN);
+
+        //Stab - объект для ответа на вызов метода
+        //Mockito.doReturn(true).when(userDao).delete(IVAN.getId());
+        //Mockito.doReturn(true).when(userDao).delete(Mockito.anyInt());
+        Mockito.when(userDao.delete(IVAN.getId()))
+                /*.thenReturn(true)
+                .thenReturn(false)*/
+                .thenReturn(true, false);
+
+        boolean isDeleted = userServiceLocal.deleteUserById(IVAN.getId());
+
+        assertThat(isDeleted).isTrue();
+
+        // Верификация: метод был вызван с заданными параметрами
+        Mockito.verify(userDao).delete(IVAN.getId());
+
+        System.out.println("second call userService.deleteUserById(): " +
+                userServiceLocal.deleteUserById(IVAN.getId()));
+
+        // Верификация: метод delete был вызван дважды
+        Mockito.verify(userDao, Mockito.times(2))
+                .delete(IVAN.getId());
+        Mockito.verify(userDao, Mockito.never()).delete(PETR.getId());
+
+        Mockito.doNothing().when(userDao).anyMethod();
+        userServiceLocal.anyMethod();
+
+        // Тест проходит если посл двух вызовов delete идет вызов anyMethod
+        Mockito.inOrder(userDao)
+                .verify(userDao, Mockito.calls(2))
+                .delete(IVAN.getId());
+        Mockito.inOrder(userDao)
+                .verify(userDao)
+                .anyMethod();
+
+        Mockito.reset(userDao);
+        //задание условия аргументу: true будет только если deleteUserById вызывается с 2 и выше
+        Mockito.when(userDao.delete(Mockito.argThat(arg -> arg > 1 )))
+                .thenReturn(true);
+        assertThat(userServiceLocal.deleteUserById(IVAN.getId())).isFalse();
+        assertThat(userServiceLocal.deleteUserById(SERG.getId())).isTrue();
+
+        //Проверка аргумента. Вполне возможен вариант, что метод userServiceLocal.deleteUserById
+        // имеет логику в соответствии с которой userDao.delete() вызывается с другим аргументом.
+        // существует возможность получить этот аргумент и проверить его
+        Mockito.reset(userDao);
+        userServiceLocal.deleteUserByAnotherId(IVAN.getId());
+
+        ArgumentCaptor<Integer> requestCaptor = ArgumentCaptor.forClass(Integer.class);
+        Mockito.verify(userDao, Mockito.times(1)).delete(requestCaptor.capture());
+        assertThat(requestCaptor.getAllValues()).hasSize(1);
+        Integer capturedArgument = requestCaptor.getValue();
+        assertThat(capturedArgument).isEqualTo(25);
+    }
+
+    @Test
+    void whenExceptionThenReturnsError() throws SQLException {
+        UserDao userDao = Mockito.mock(UserDaoImpl.class);
+        UserService userServiceLocal = new UserService(userDao);
+        userServiceLocal.add(IVAN);
+
+        //тест пройдет, поскольку реальная реализация заменится дефольным значение - false
+        System.out.println("userServiceLocal.processConnection(): " + userServiceLocal.processConnection());
+
+        Mockito.when(userDao.getConnection()).thenReturn(true);
+        String result = userServiceLocal.processConnection();
+        assertThat(result).isEqualTo("connection is ok");
+
+        // Мокирование исключения
+        Mockito.when(userDao.getConnection()).thenThrow(new SQLException());
+        result = userServiceLocal.processConnection();
+        assertThat(result).isEqualTo("connection is fail");
     }
 
     @Test
