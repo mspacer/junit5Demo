@@ -1,70 +1,39 @@
 package com.msp.junit.service;
 
 import com.msp.junit.dao.UserDao;
-import com.msp.junit.dao.UserDaoImpl;
-import com.msp.junit.dto.User;
+import com.msp.junit.dto.CreateUserDto;
+import com.msp.junit.dto.UserDto;
+import com.msp.junit.exception.ValidationException;
+import com.msp.junit.mapper.CreateUserMapper;
+import com.msp.junit.mapper.UserMapper;
+import com.msp.junit.validator.CreateUserValidator;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
+@RequiredArgsConstructor
 public class UserService {
-    private final List<User> users = new ArrayList<>();
+
+    private final CreateUserValidator createUserValidator;
     private final UserDao userDao;
+    private final CreateUserMapper createUserMapper;
+    private final UserMapper userMapper;
 
-    /*public UserService() {
-        this.userDao = null;
-    }*/
-    public UserService(UserDao userDao) {
-        this.userDao = userDao;
+    public Optional<UserDto> login(String email, String password) {
+        return userDao.findByEmailAndPassword(email, password)
+                .map(userMapper::map);
     }
 
-    public List<User> getAll() {
-        return users;
-    }
-
-    public boolean add(User ... users) {
-        return this.users.addAll(Arrays.asList(users));
-    }
-
-    public Optional<User> login(String username, String password) {
-        if (username == null || password == null) {
-            throw new IllegalArgumentException("username or password is null");
+    @SneakyThrows
+    public UserDto create(CreateUserDto userDto) {
+        var validationResult = createUserValidator.validate(userDto);
+        if (validationResult.hasErrors()) {
+            throw new ValidationException(validationResult.getErrors());
         }
+        var userEntity = createUserMapper.map(userDto);
+        userDao.save(userEntity);
 
-        return users.stream()
-                .filter(user -> user.getPassword().equals(password) && user.getUsername().equals(username))
-                .findFirst();
-    }
-
-    public Map<Integer, User> getAllConvertedById() {
-        return users.stream()
-                .collect(Collectors.toMap(User::getId, Function.identity()));
-    }
-
-    public boolean deleteUserById(Integer id) {
-        return userDao.delete(id);
-    }
-
-    public boolean deleteUserByAnotherId(Integer id) {
-        id = 25;
-        return userDao.delete(id);
-    }
-
-    public void anyMethod() {
-        userDao.anyMethod();
-    }
-
-    public String processConnection() {
-        try {
-            userDao.getConnection();
-            return "connection is ok";
-        } catch (SQLException e) {
-            return "connection is fail";
-        }
-
+        return userMapper.map(userEntity);
     }
 }

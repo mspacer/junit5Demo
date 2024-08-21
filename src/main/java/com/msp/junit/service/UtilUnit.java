@@ -1,4 +1,4 @@
-package com.msp.junit.service;
+package com.msp.junit.junit.service;
 
 public class UtilUnit {
 
